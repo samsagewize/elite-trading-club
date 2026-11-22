@@ -298,3 +298,191 @@ a:focus-visible {
   .nav-inner { min-height: 64px; }
   .hero { padding: 24px 0 48px; }
 }
+
+/* Motion */
+.progress {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 2px;
+  z-index: 60;
+  pointer-events: none;
+  background: transparent;
+}
+
+.progress-bar {
+  height: 100%;
+  width: 100%;
+  background: var(--gold);
+  transform: scaleX(0);
+  transform-origin: left center;
+  box-shadow: 0 0 8px rgba(212, 160, 23, 0.55);
+  will-change: transform;
+}
+
+.hero-stage {
+  position: relative;
+  width: min(420px, 86vw);
+  margin: 0 auto 8px;
+  perspective: 900px;
+}
+
+.hero-stage .hero-art {
+  width: 100%;
+  margin: 0;
+  transform-style: preserve-3d;
+  will-change: transform;
+}
+
+.sparkles {
+  position: absolute;
+  inset: 6% 4% 18%;
+  pointer-events: none;
+  z-index: 2;
+}
+
+.sparkle {
+  position: absolute;
+  width: 4px;
+  height: 4px;
+  border-radius: 50%;
+  background: var(--gold);
+  box-shadow: 0 0 6px rgba(212, 160, 23, 0.8);
+  opacity: 0;
+  animation: twinkle 3.6s ease-in-out infinite;
+}
+
+.sparkle.cyan {
+  width: 3px;
+  height: 3px;
+  background: var(--cyan);
+  box-shadow: 0 0 6px rgba(59, 184, 240, 0.85);
+}
+
+@keyframes twinkle {
+  0%, 100% { opacity: 0; transform: translateY(0) scale(0.35); }
+  35% { opacity: 0.95; transform: translateY(-12px) scale(1); }
+  70% { opacity: 0.2; transform: translateY(-20px) scale(0.55); }
+}
+
+@keyframes bob {
+  0%, 100% { transform: translateY(0) rotate(-0.5deg); }
+  50% { transform: translateY(-10px) rotate(0.6deg); }
+}
+
+@media (prefers-reduced-motion: no-preference) and (hover: none) {
+  .hero-art { animation: bob 4.8s ease-in-out infinite; }
+}
+
+.arrow-row {
+  display: flex;
+  justify-content: center;
+  padding: 8px 0 12px;
+  color: var(--cyan);
+}
+
+.draw-arrow {
+  width: 28px;
+  height: 96px;
+  overflow: visible;
+}
+
+.draw-arrow-path {
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.6;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  filter: drop-shadow(0 0 6px rgba(59, 184, 240, 0.45));
+}
+
+.ticker {
+  overflow: hidden;
+  border-top: 1px solid var(--line);
+  border-bottom: 1px solid var(--line);
+  padding: 13px 0;
+  background: #050505;
+}
+
+.ticker-track {
+  display: flex;
+  width: max-content;
+  gap: 0;
+  font-weight: 300;
+  font-size: 0.68rem;
+  letter-spacing: 0.32em;
+  text-transform: uppercase;
+  color: #d8d8d8;
+  white-space: nowrap;
+}
+
+.ticker-track span { padding-right: 0.15em; }
+.ticker-track em {
+  font-style: normal;
+  color: var(--cyan);
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .ticker-track { animation: marquee 36s linear infinite; }
+  .ticker:hover .ticker-track { animation-play-state: paused; }
+}
+
+@keyframes marquee {
+  from { transform: translateX(0); }
+  to { transform: translateX(-50%); }
+}
+
+.reveal {
+  opacity: 0;
+  transform: translateY(28px);
+  transition: opacity 0.8s ease, transform 0.8s ease;
+}
+
+.reveal.in {
+  opacity: 1;
+  transform: none;
+}
+
+.card {
+  transform-style: preserve-3d;
+  transition: transform 0.18s ease, border-color 0.25s ease, box-shadow 0.25s ease, opacity 0.8s ease;
+}
+
+.card:hover {
+  border-color: rgba(212, 160, 23, 0.45);
+  box-shadow: 0 18px 40px rgba(0, 0, 0, 0.45), 0 0 28px rgba(212, 160, 23, 0.12), 0 0 16px rgba(59, 184, 240, 0.06);
+}
+
+.magnetic {
+  transition: transform 0.2s ease, background 0.2s ease, color 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.ig-btn.pulse {
+  animation: cta-pulse 2.8s ease-in-out infinite;
+}
+
+@keyframes cta-pulse {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(212, 160, 23, 0); }
+  50% { box-shadow: 0 0 0 8px rgba(212, 160, 23, 0.08), 0 0 22px rgba(212, 160, 23, 0.22); }
+}
+
+.ig-btn.pulse:hover { animation: none; }
+
+@media (prefers-reduced-motion: reduce) {
+  html { scroll-behavior: auto; }
+  .reveal,
+  .reveal.in {
+    opacity: 1;
+    transform: none;
+    transition: none;
+  }
+  .hero-art,
+  .ig-btn.pulse,
+  .ticker-track,
+  .sparkle {
+    animation: none !important;
+  }
+  .sparkles { display: none; }
+  .card { transition: border-color 0.2s ease; }
+}
