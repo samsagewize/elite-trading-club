@@ -1,10 +1,10 @@
 <!DOCTYPE html>
-<html lang="en" class="no-js">
+<html lang="en">
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <title>Elite Trading Club</title>
-  <meta name="description" content="Elite Trading Club is a focused community for traders — ideas, education, and people who take the craft seriously.">
+  <meta name="description" content="Elite Trading Club is a focused community for traders. Follow us on Instagram @elitetrading.club.">
   <link rel="canonical" href="https://elite-trading-club.vercel.app/">
 
   <meta property="og:type" content="website">
@@ -20,218 +20,51 @@
   <meta name="twitter:description" content="A focused community for traders. Follow us on Instagram @elitetrading.club.">
   <meta name="twitter:image" content="https://elite-trading-club.vercel.app/og.jpg">
 
-  <meta name="theme-color" content="#0b0907">
-  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="theme-color" content="#fffaf0">
   <link rel="icon" type="image/png" sizes="32x32" href="/favicon.png">
   <link rel="icon" type="image/png" sizes="192x192" href="/img/icon-192.png">
   <link rel="apple-touch-icon" href="/apple-touch-icon.png">
   <link rel="manifest" href="/site.webmanifest">
-
-  <script>
-    document.documentElement.classList.remove("no-js");
-    document.documentElement.classList.add("js");
-    try {
-      if (!sessionStorage.getItem("etc-binder-open")) {
-        document.documentElement.classList.add("binder-closed");
-      }
-    } catch (e) {
-      document.documentElement.classList.add("binder-closed");
-    }
-    setTimeout(function () {
-      if (!document.documentElement.classList.contains("binder-ready")) {
-        document.documentElement.classList.remove("binder-closed");
-      }
-    }, 2800);
-  </script>
-  <noscript>
-    <style>
-      .reveal, .hero-intro { opacity: 1 !important; transform: none !important; }
-      .binder { display: none !important; }
-      html, body { overflow: auto !important; height: auto !important; }
-    </style>
-  </noscript>
-
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="/styles.css">
 </head>
 <body>
-  <div class="progress" aria-hidden="true"><div class="progress-bar"></div></div>
+  <main class="page">
+    <picture class="logo fade">
+      <source type="image/webp" srcset="/img/ghost.webp">
+      <img src="/img/ghost.png" width="298" height="400" alt="Elite Trading Club logo: a crowned white ghost in an ETC hoodie">
+    </picture>
 
-  <div class="binder" role="dialog" aria-modal="true" aria-labelledby="binder-title">
-    <div class="binder-scene">
-      <div class="binder-book">
-        <div class="binder-stack" aria-hidden="true">
-          <span></span><span></span><span></span>
-        </div>
-        <div class="binder-spine" aria-hidden="true"></div>
-        <div class="binder-rings" aria-hidden="true">
-          <span class="ring"></span>
-          <span class="ring"></span>
-          <span class="ring"></span>
-        </div>
-        <button type="button" class="binder-cover" aria-label="Open the Elite Trading Club binder">
-          <span class="cover-face cover-back" aria-hidden="true"></span>
-          <span class="cover-face cover-front">
-            <span class="cover-stitch" aria-hidden="true"></span>
-            <span class="cover-logo">
-              <img src="/img/cover-mark.png" alt="" width="220" height="220">
-            </span>
-            <span id="binder-title" class="cover-title">Elite Trading Club</span>
-            <span class="cover-hint">
-              <span class="hint-tap">Tap to open</span>
-              <span class="hint-click">Click to open</span>
-            </span>
-          </span>
-        </button>
-      </div>
-    </div>
-    <button type="button" class="binder-skip">Skip</button>
-  </div>
+    <h1 class="fade">Elite Trading Club</h1>
+    <p class="tagline fade">A focused community for traders.</p>
 
-  <div class="site">
-    <header class="nav">
-      <div class="wrap nav-inner">
-        <a class="brand" href="/" aria-label="Elite Trading Club home">
-          <img src="/img/mark.webp" alt="" width="40" height="40">
-          <span class="brand-name">
-            <span class="brand-full">Elite Trading Club</span>
-            <span class="brand-short">ETC</span>
-          </span>
-        </a>
-        <nav class="nav-links" aria-label="Primary">
-          <a class="hide-sm" href="#about">About</a>
-          <a class="hide-sm" href="#membership">The Club</a>
-          <a class="ig-btn nav-cta" href="https://www.instagram.com/elitetrading.club/" target="_blank" rel="noopener noreferrer">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true">
-              <rect x="3.5" y="3.5" width="17" height="17" rx="5"/>
-              <circle cx="12" cy="12" r="4"/>
-              <circle cx="17.4" cy="6.6" r="0.8" fill="currentColor" stroke="none"/>
-            </svg>
-            <span>Follow <span class="cta-extra">us <span class="handle">@elitetrading.club</span></span></span>
-          </a>
-        </nav>
-      </div>
-    </header>
+    <a class="ig-btn fade" href="https://www.instagram.com/elitetrading.club/" target="_blank" rel="noopener noreferrer">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true">
+        <rect x="3.5" y="3.5" width="17" height="17" rx="5"/>
+        <circle cx="12" cy="12" r="4"/>
+        <circle cx="17.4" cy="6.6" r="0.85" fill="currentColor" stroke="none"/>
+      </svg>
+      <span>Follow @elitetrading.club on Instagram</span>
+    </a>
 
-    <main>
-      <section class="hero">
-        <div class="wrap">
-          <div class="hero-stage">
-            <div class="sparkles" aria-hidden="true"></div>
-            <div class="hero-art">
-              <picture>
-                <source type="image/webp" srcset="/img/hero.webp">
-                <img src="/img/hero.jpg" width="624" height="840" alt="Elite Trading Club logo: a crowned white ghost in an ETC hoodie, with the words Elite Trading Club below">
-              </picture>
-            </div>
-          </div>
-          <div class="arrow-row" aria-hidden="true">
-            <svg class="draw-arrow" viewBox="0 0 40 120" fill="none">
-              <path class="draw-arrow-path" d="M20 112 V26 L9 42 M20 26 L31 42"/>
-            </svg>
-          </div>
-          <p class="tagline hero-intro">A focused community for traders.</p>
-          <a class="ig-btn lg hero-cta pulse hero-intro" href="https://www.instagram.com/elitetrading.club/" target="_blank" rel="noopener noreferrer">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true">
-              <rect x="3.5" y="3.5" width="17" height="17" rx="5"/>
-              <circle cx="12" cy="12" r="4"/>
-              <circle cx="17.4" cy="6.6" r="0.8" fill="currentColor" stroke="none"/>
-            </svg>
-            <span>Follow us on Instagram <span class="handle">@elitetrading.club</span></span>
-          </a>
-        </div>
-      </section>
+    <ul class="features">
+      <li class="fade">
+        <h2>Community</h2>
+        <p>A place to connect with other traders, ask questions, and grow alongside people on the same path.</p>
+      </li>
+      <li class="fade">
+        <h2>Signals</h2>
+        <p>Market ideas and setups shared with the club — so you can study them, compare notes, and think for yourself.</p>
+      </li>
+      <li class="fade">
+        <h2>Education</h2>
+        <p>Conversations and resources that help you build a clearer, more disciplined approach — at your own pace.</p>
+      </li>
+    </ul>
+  </main>
 
-      <div class="ticker" aria-hidden="true">
-        <div class="ticker-track">
-          <span>Elite Trading Club • Follow <em>@elitetrading.club</em> • Elite Trading Club • Follow <em>@elitetrading.club</em> • </span>
-          <span>Elite Trading Club • Follow <em>@elitetrading.club</em> • Elite Trading Club • Follow <em>@elitetrading.club</em> • </span>
-        </div>
-      </div>
-
-      <section id="about" class="about page">
-        <div class="wrap page-sheet">
-          <p class="kicker reveal">About the club</p>
-          <h2 class="reveal">Elite Trading Club</h2>
-          <p class="lead reveal">We are a community for people who want to get better at the markets — together. Members share ideas, study the craft, and keep each other sharp. No noise. Just a focused room for traders who take the work seriously.</p>
-        </div>
-      </section>
-
-      <section id="membership" class="page">
-        <div class="wrap page-sheet">
-          <p class="kicker reveal">What you get</p>
-          <h2 class="reveal">Inside the club</h2>
-          <div class="cards">
-            <article class="sleeve reveal">
-              <div class="card">
-                <svg class="card-icon cyan" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true">
-                  <path d="M4 16l5-5 4 4 7-8"/>
-                  <path d="M15 7h5v5"/>
-                </svg>
-                <h3>Signals</h3>
-                <p>Market ideas and setups shared with the club — so you can study them, compare notes, and think for yourself.</p>
-              </div>
-            </article>
-            <article class="sleeve reveal">
-              <div class="card">
-                <svg class="card-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true">
-                  <circle cx="8" cy="8" r="3"/>
-                  <circle cx="16" cy="8" r="3"/>
-                  <circle cx="12" cy="16" r="3"/>
-                  <path d="M5.5 13.5C4 14.6 3 16.2 3 18v1h6"/>
-                  <path d="M18.5 13.5C20 14.6 21 16.2 21 18v1h-6"/>
-                </svg>
-                <h3>Community</h3>
-                <p>A place to connect with other traders, ask questions, stay accountable, and grow alongside people on the same path.</p>
-              </div>
-            </article>
-            <article class="sleeve reveal">
-              <div class="card">
-                <svg class="card-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true">
-                  <path d="M5 4h10a3 3 0 0 1 3 3v13H8a3 3 0 0 0-3 3V4z"/>
-                  <path d="M8 4v16"/>
-                </svg>
-                <h3>Education</h3>
-                <p>Conversations and resources that help you build a clearer, more disciplined approach — at your own pace.</p>
-              </div>
-            </article>
-          </div>
-        </div>
-      </section>
-
-      <section class="follow page" id="follow">
-        <div class="wrap page-sheet follow-sheet">
-          <p class="kicker reveal">Stay close</p>
-          <h2 class="reveal">Follow the club</h2>
-          <p class="reveal">New updates and community posts live on Instagram. Come follow us and say hello.</p>
-          <a class="ig-btn lg pulse reveal" href="https://www.instagram.com/elitetrading.club/" target="_blank" rel="noopener noreferrer">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true">
-              <rect x="3.5" y="3.5" width="17" height="17" rx="5"/>
-              <circle cx="12" cy="12" r="4"/>
-              <circle cx="17.4" cy="6.6" r="0.8" fill="currentColor" stroke="none"/>
-            </svg>
-            <span>Follow us on Instagram <span class="handle">@elitetrading.club</span></span>
-          </a>
-        </div>
-      </section>
-    </main>
-
-    <footer>
-      <div class="wrap foot">
-        <a class="foot-brand" href="/">
-          <img src="/img/mark.webp" alt="" width="28" height="28">
-          <span>Elite Trading Club</span>
-        </a>
-        <div class="foot-links">
-          <a href="https://www.instagram.com/elitetrading.club/" target="_blank" rel="noopener noreferrer">Instagram @elitetrading.club</a>
-        </div>
-        <p class="note">Educational community only. Nothing on this site is financial advice or a promise of results.</p>
-      </div>
-    </footer>
-  </div>
-
-  <script src="/script.js" defer></script>
+  <footer class="fade">
+    <a href="https://www.instagram.com/elitetrading.club/" target="_blank" rel="noopener noreferrer">Instagram @elitetrading.club</a>
+    <p>Educational community only. Nothing on this site is financial advice or a promise of results.</p>
+  </footer>
 </body>
 </html>
