@@ -72,7 +72,8 @@
         body: JSON.stringify({ image: dataUrl })
       });
     }).then(function (d) {
-      var c = d.card || {};
+      if (!d.card) throw new Error(d.error || "no card");
+      var c = d.card;
       if (c.game === "pokemon" || c.game === "onepiece") {
         setGame(c.game);
         var bits = [c.name, c.number, c.set, c.variant].filter(Boolean).join(" · ");
@@ -87,8 +88,88 @@
           : "Couldn't find a card in that photo. Try again closer, with less glare, or type the name.";
       }
     }).catch(function (err) {
+      if (!$("previewImg").src) {
+        $("idStatus").className = "status warn";
+        $("idStatus").textContent = (err && err.message) || "Couldn't open that photo.";
+        return;
+      }
+      ocrFallback($("previewImg").src);
+    });
+  }
+
+  // ---- Fallback: read the collector number on the phone with OCR ----
+  var tessPromise = null;
+  function loadTesseract() {
+    if (window.Tesseract) return Promise.resolve(window.Tesseract);
+    if (!tessPromise) {
+      tessPromise = new Promise(function (resolve, reject) {
+        var s = document.createElement("script");
+        s.src = "https://cdn.jsdelivr.net/npm/tesseract.js@5.1.1/dist/tesseract.min.js";
+        s.onload = function () { resolve(window.Tesseract); };
+        s.onerror = function () { tessPromise = null; reject(new Error("OCR failed to load")); };
+        document.head.appendChild(s);
+      });
+    }
+    return tessPromise;
+  }
+  function findNumber(text) {
+    var t = text.replace(/[|]/g, "/").replace(/\s+/g, " ");
+    var op = t.match(/\b([O0]P|ST|EB|PRB)\s?(\d{2})\s?[-–—~]\s?(\d{3})/i);
+    if (op) return { game: "onepiece", number: op[1].toUpperCase().replace("0", "O") + op[2] + "-" + op[3] };
+    var pk = t.match(/\b(\d{1,3})\s?\/\s?(\d{2,3})\b/);
+    if (pk && Number(pk[2]) >= 20) return { game: "pokemon", number: pk[1] + "/" + pk[2] };
+    var promo = t.match(/\b(SVP|SWSH|SM|XY)\s?(\d{2,3})\b/);
+    if (promo) return { game: "pokemon", number: promo[1] + " " + promo[2] };
+    return null;
+  }
+  // Collector numbers sit along the bottom edge, so OCR an enlarged bottom strip first.
+  function bottomStrip(dataUrl) {
+    return new Promise(function (resolve) {
+      var img = new Image();
+      img.onload = function () {
+        var w = img.naturalWidth, h = img.naturalHeight, sh = Math.round(h * 0.16);
+        var scale = Math.min(2.5, 1800 / w);
+        var c = document.createElement("canvas");
+        c.width = Math.round(w * scale); c.height = Math.round(sh * scale);
+        var g = c.getContext("2d");
+        g.filter = "grayscale(1) contrast(1.4)";
+        g.drawImage(img, 0, h - sh, w, sh, 0, 0, c.width, c.height);
+        resolve(c.toDataURL("image/png"));
+      };
+      img.onerror = function () { resolve(dataUrl); };
+      img.src = dataUrl;
+    });
+  }
+  function ocrFallback(dataUrl) {
+    $("idStatus").className = "status busy";
+    $("idStatus").textContent = "Reading the card number from your photo…";
+    var T;
+    loadTesseract().then(function (t) {
+      T = t;
+      return bottomStrip(dataUrl);
+    }).then(function (strip) {
+      return T.recognize(strip, "eng");
+    }).then(function (r) {
+      var hit = findNumber((r && r.data && r.data.text) || "");
+      if (hit) return hit;
+      return T.recognize(dataUrl, "eng").then(function (r2) {
+        return findNumber((r2 && r2.data && r2.data.text) || "");
+      });
+    }).then(function (hit) {
+      if (!hit) {
+        $("idStatus").className = "status warn";
+        $("idStatus").textContent = "Couldn't read the card number. Type the card name or number (like 223/197 or OP01-024) below.";
+        $("q").focus();
+        return;
+      }
+      setGame(hit.game);
+      $("q").value = hit.number;
+      $("idStatus").className = "status ok";
+      $("idStatus").textContent = "Read card number " + hit.number + ". Pick your card below, or add the name to narrow it down.";
+      search(hit.number);
+    }).catch(function () {
       $("idStatus").className = "status warn";
-      $("idStatus").textContent = (err && err.message) || "Couldn't read the card. Type the name instead.";
+      $("idStatus").textContent = "Couldn't read the card. Type the card name or number below.";
     });
   }
   $("camera").addEventListener("change", onFile);

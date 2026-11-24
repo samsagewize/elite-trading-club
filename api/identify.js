@@ -1,6 +1,7 @@
 // Identifies a Pokémon or One Piece card from a photo using a vision model
 // through Vercel AI Gateway. On Vercel the gateway is authenticated with the
-// deployment's OIDC token; AI_GATEWAY_API_KEY works as an alternative.
+// deployment's OIDC token; AI_GATEWAY_API_KEY works too, and GEMINI_API_KEY
+// (Google AI Studio) is used instead when it is set.
 const { send, fetchWithTimeout } = require("./_lib");
 
 const MODEL = process.env.CARD_VISION_MODEL || "google/gemini-2.5-flash";
@@ -39,49 +40,77 @@ module.exports = async (req, res) => {
   }
   if (image.length > 4_000_000) return send(res, 413, { error: "Photo is too large. Try again." });
 
+  const geminiKey = process.env.GEMINI_API_KEY;
   const token =
     process.env.AI_GATEWAY_API_KEY || req.headers["x-vercel-oidc-token"] || process.env.VERCEL_OIDC_TOKEN;
-  if (!token) return send(res, 503, { error: "Card recognition is not configured (no AI Gateway credentials)." });
+  if (!geminiKey && !token) {
+    return send(res, 200, { card: null, code: "needs_setup", error: "Photo recognition isn't set up yet. Reading the card number from your photo instead." });
+  }
 
   try {
-    const r = await fetchWithTimeout(
-      "https://ai-gateway.vercel.sh/v1/chat/completions",
-      {
-        method: "POST",
-        headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
-        body: JSON.stringify({
-          model: MODEL,
-          temperature: 0,
-          messages: [
-            { role: "system", content: PROMPT },
-            {
-              role: "user",
-              content: [
-                { type: "text", text: "Identify this card." },
-                { type: "image_url", image_url: { url: image } },
-              ],
-            },
-          ],
-          response_format: { type: "json_schema", json_schema: { name: "card", strict: true, schema: SCHEMA } },
-        }),
-      },
-      45000
-    );
-    const data = await r.json().catch(() => ({}));
-    if (!r.ok) {
-      const msg = (data && data.error && (data.error.message || data.error.type)) || `HTTP ${r.status}`;
-      console.error("identify gateway error", r.status, msg);
-      return send(res, 502, { error: "Card recognition failed. Type the card name instead.", detail: String(msg).slice(0, 200) });
-    }
-    const text = data.choices && data.choices[0] && data.choices[0].message && data.choices[0].message.content;
-    let card;
-    try { card = JSON.parse(text); } catch { card = null; }
-    if (!card) return send(res, 502, { error: "Could not read the card. Type the card name instead." });
-
+    const card = geminiKey ? await viaGemini(geminiKey, image) : await viaGateway(token, image);
     const query = [card.name, card.number].filter(Boolean).join(" ").trim();
-    return send(res, 200, { card, query, model: MODEL });
+    return send(res, 200, { card, query, model: geminiKey ? GEMINI_MODEL : MODEL });
   } catch (e) {
-    console.error("identify failed", e && e.message);
-    return send(res, 504, { error: "Card recognition timed out. Try again or type the card name." });
+    const msg = String((e && e.message) || e);
+    console.error("identify failed:", msg.slice(0, 300));
+    const needsSetup = /credit card|unlock your free credits|unauthorized|invalid api key|API key not valid/i.test(msg);
+    // 200 so the page quietly falls back to on-phone OCR without a console error.
+    return send(res, 200, {
+      card: null,
+      code: needsSetup ? "needs_setup" : "failed",
+      error: needsSetup
+        ? "Photo recognition isn't switched on yet. Reading the card number from your photo instead."
+        : "Couldn't read the card. Reading the card number from your photo instead.",
+    });
   }
 };
+
+async function viaGateway(token, image) {
+  const r = await fetchWithTimeout(
+    "https://ai-gateway.vercel.sh/v1/chat/completions",
+    {
+      method: "POST",
+      headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+      body: JSON.stringify({
+        model: MODEL,
+        temperature: 0,
+        messages: [
+          { role: "system", content: PROMPT },
+          { role: "user", content: [{ type: "text", text: "Identify this card." }, { type: "image_url", image_url: { url: image } }] },
+        ],
+        response_format: { type: "json_schema", json_schema: { name: "card", strict: true, schema: SCHEMA } },
+      }),
+    },
+    45000
+  );
+  const data = await r.json().catch(() => ({}));
+  if (!r.ok) throw new Error((data && data.error && (data.error.message || data.error.type)) || `AI Gateway HTTP ${r.status}`);
+  const text = data.choices && data.choices[0] && data.choices[0].message && data.choices[0].message.content;
+  return JSON.parse(text);
+}
+
+const GEMINI_MODEL = process.env.GEMINI_MODEL || "gemini-2.5-flash";
+
+async function viaGemini(key, image) {
+  const m = image.match(/^data:(image\/[a-z]+);base64,(.*)$/);
+  const schema = JSON.parse(JSON.stringify(SCHEMA));
+  delete schema.additionalProperties;
+  const r = await fetchWithTimeout(
+    `https://generativelanguage.googleapis.com/v1beta/models/${GEMINI_MODEL}:generateContent`,
+    {
+      method: "POST",
+      headers: { "Content-Type": "application/json", "x-goog-api-key": key },
+      body: JSON.stringify({
+        systemInstruction: { parts: [{ text: PROMPT }] },
+        contents: [{ role: "user", parts: [{ text: "Identify this card." }, { inline_data: { mime_type: m[1], data: m[2] } }] }],
+        generationConfig: { temperature: 0, responseMimeType: "application/json", responseSchema: schema },
+      }),
+    },
+    45000
+  );
+  const data = await r.json().catch(() => ({}));
+  if (!r.ok) throw new Error((data && data.error && data.error.message) || `Gemini HTTP ${r.status}`);
+  const parts = (data.candidates && data.candidates[0] && data.candidates[0].content && data.candidates[0].content.parts) || [];
+  return JSON.parse(parts.map((p) => p.text || "").join(""));
+}

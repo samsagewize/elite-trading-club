@@ -31,7 +31,12 @@ async function searchProducts(game, q) {
   if (!r.ok) throw new Error(`TCGplayer search HTTP ${r.status}`);
   const d = await r.json();
   const rows = (d && d.results && d.results[0] && d.results[0].results) || [];
-  return rows.map((x) => {
+  // Keep TCGplayer's order, but list printings that have a market price first.
+  const sorted = rows
+    .map((x, i) => ({ x, i }))
+    .sort((a, b) => (typeof b.x.marketPrice === "number") - (typeof a.x.marketPrice === "number") || a.i - b.i)
+    .map((o) => o.x);
+  return sorted.map((x) => {
     const id = Math.round(Number(x.productId));
     const attrs = x.customAttributes || {};
     return {
