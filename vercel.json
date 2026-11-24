@@ -4,8 +4,22 @@
     {
       "source": "/(.*)\\.(avif|css|ico|jpg|js|png|svg|webp|woff2)",
       "headers": [
-        { "key": "Cache-Control", "value": "public, max-age=31536000, immutable" }
+        {
+          "key": "Cache-Control",
+          "value": "public, max-age=31536000, immutable"
+        }
       ]
     }
-  ]
+  ],
+  "functions": {
+    "api/identify.js": {
+      "maxDuration": 60
+    },
+    "api/ebay.js": {
+      "maxDuration": 20
+    },
+    "api/tcgplayer.js": {
+      "maxDuration": 20
+    }
+  }
 }

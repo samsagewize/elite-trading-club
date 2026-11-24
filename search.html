@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>Card Search · Elite Trading Club</title>
+  <meta name="description" content="Snap a photo of a Pokémon or One Piece card and see its latest TCGplayer and eBay sold prices.">
+  <link rel="canonical" href="https://elite-trading-club.vercel.app/search">
+  <meta name="theme-color" content="#0b0b0f">
+  <link rel="icon" type="image/png" sizes="32x32" href="/favicon.png">
+  <link rel="apple-touch-icon" href="/apple-touch-icon.png">
+  <link rel="manifest" href="/site.webmanifest">
+  <link rel="stylesheet" href="/styles.css?v=4">
+</head>
+<body>
+  <nav class="tabs" aria-label="Main">
+    <a href="/">Home</a>
+    <a href="/search" aria-current="page">Search</a>
+  </nav>
+
+  <main class="page search-page">
+    <h1 class="fade">Card Search</h1>
+    <p class="tagline fade">Snap a Pokémon or One Piece card to see what it actually sold for.</p>
+
+    <div class="game-toggle fade" role="radiogroup" aria-label="Game">
+      <button type="button" class="chip" role="radio" aria-checked="true" data-game="pokemon">Pokémon</button>
+      <button type="button" class="chip" role="radio" aria-checked="false" data-game="onepiece">One Piece</button>
+    </div>
+
+    <div class="snap fade">
+      <label class="ig-btn snap-btn">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true">
+          <path d="M4 8h3l1.6-2.4h6.8L17 8h3v11H4z"/><circle cx="12" cy="13" r="3.6"/>
+        </svg>
+        <span>Take a photo</span>
+        <input id="camera" type="file" accept="image/*" capture="environment" hidden>
+      </label>
+      <label class="ghost-btn">
+        <span>Upload a photo</span>
+        <input id="upload" type="file" accept="image/*" hidden>
+      </label>
+    </div>
+
+    <div id="preview" class="preview" hidden>
+      <img id="previewImg" alt="Your card photo">
+      <p id="idStatus" class="status" role="status" aria-live="polite"></p>
+    </div>
+
+    <form id="searchForm" class="search-form fade" autocomplete="off">
+      <label for="q" class="sr-only">Card name and number</label>
+      <input id="q" name="q" type="search" inputmode="search" placeholder="e.g. Charizard ex 223/197" enterkeyhint="search">
+      <button type="submit" class="go-btn">Search</button>
+    </form>
+
+    <section id="matches" class="block" hidden>
+      <h2 class="block-title">Matches on TCGplayer</h2>
+      <p class="hint">Tap the exact printing.</p>
+      <ul id="matchList" class="match-list"></ul>
+    </section>
+
+    <section id="tcg" class="block" hidden>
+      <div class="block-head">
+        <h2 class="block-title">TCGplayer · latest sales</h2>
+        <a id="tcgLink" class="ext" target="_blank" rel="noopener noreferrer">Open</a>
+      </div>
+      <div id="tcgSummary" class="summary"></div>
+      <div id="tcgSales"></div>
+    </section>
+
+    <section id="ebay" class="block" hidden>
+      <div class="block-head">
+        <h2 class="block-title">eBay · sold listings</h2>
+        <a id="ebayLink" class="ext" target="_blank" rel="noopener noreferrer">Open</a>
+      </div>
+      <div id="ebaySales"></div>
+    </section>
+
+    <p class="fine">Sales come live from TCGplayer's and eBay's public pages. Nothing here is estimated or made up. Card photos are only used to read the card and are not stored. Not affiliated with TCGplayer, eBay, Nintendo, The Pokémon Company or Bandai.</p>
+  </main>
+
+  <footer>
+    <a href="https://www.instagram.com/elitetrading.club/" target="_blank" rel="noopener noreferrer">Instagram @elitetrading.club</a>
+  </footer>
+
+  <script src="/search.js?v=1" defer></script>
+</body>
+</html>
