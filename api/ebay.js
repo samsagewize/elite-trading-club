@@ -50,7 +50,33 @@ function parseSold(html) {
   return out;
 }
 
+// ?probe=1 reports (status codes only) which public eBay sold-data URLs answer
+// this server. Used to check whether eBay has stopped blocking cloud servers.
+async function probe(res) {
+  const q = "charizard ex 223/197";
+  const urls = {
+    soldSearchHtml: soldUrl(q),
+    soldSearchRss: soldUrl(q) + "&_rss=1",
+    mobileSoldSearch: `https://m.ebay.com/sch/i.html?_nkw=${encodeURIComponent(q)}&LH_Sold=1&LH_Complete=1`,
+    soldSearchCategory: `https://www.ebay.com/sch/183454/i.html?_nkw=${encodeURIComponent(q)}&LH_Sold=1&LH_Complete=1`,
+    findingApiNoKey: `https://svcs.ebay.com/services/search/FindingService/v1?OPERATION-NAME=findCompletedItems&SERVICE-VERSION=1.13.0&RESPONSE-DATA-FORMAT=JSON&keywords=${encodeURIComponent(q)}`,
+    homepage: "https://www.ebay.com/",
+  };
+  const out = {};
+  await Promise.all(Object.keys(urls).map(async (k) => {
+    try {
+      const r = await fetchWithTimeout(urls[k], { headers: { "User-Agent": BROWSER_UA, Accept: "text/html,application/xhtml+xml,application/xml,application/json;q=0.9,*/*;q=0.8", "Accept-Language": "en-US,en;q=0.9" }, redirect: "follow" }, 10000);
+      const body = await r.text();
+      out[k] = { status: r.status, bytes: body.length, soldMarkers: (body.match(/s-(card|item)__price/g) || []).length };
+    } catch (e) {
+      out[k] = { error: String(e && (e.name || e.message)) };
+    }
+  }));
+  return send(res, 200, { region: process.env.VERCEL_REGION || null, results: out });
+}
+
 module.exports = async (req, res) => {
+  if (req.query && req.query.probe === "1") return probe(res);
   const { game = "pokemon", q } = req.query || {};
   if (!GAMES[game]) return send(res, 400, { error: "Only Pokémon and One Piece are supported." });
   const query = cleanQuery(q);

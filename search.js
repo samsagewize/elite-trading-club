@@ -171,12 +171,52 @@
     });
   }
 
+
+  // ---------- live name suggestions ----------
+  var sugTimer = null, sugReq = 0, sugItems = [];
+  function hideSuggest() { $("suggest").hidden = true; $("q").setAttribute("aria-expanded", "false"); }
+  $("q").addEventListener("input", function () {
+    clearTimeout(sugTimer);
+    var q = $("q").value.trim();
+    if (q.length < 2) { hideSuggest(); return; }
+    sugTimer = setTimeout(function () {
+      var req = ++sugReq;
+      getJSON("/api/suggest?game=" + state.game + "&q=" + encodeURIComponent(q)).then(function (d) {
+        if (req !== sugReq || $("q").value.trim() !== q) return;
+        sugItems = d.suggestions || [];
+        if (!sugItems.length) { hideSuggest(); return; }
+        $("suggest").innerHTML = sugItems.map(function (p, i) {
+          return '<li role="option"><button type="button" class="sug" data-i="' + i + '">' +
+            '<img src="' + esc(p.image) + '" alt="" width="28" height="39" loading="lazy">' +
+            '<span class="sug-text"><span>' + esc(p.name) + '</span><small>' + esc([p.set, p.number && "#" + p.number].filter(Boolean).join(" · ")) + '</small></span>' +
+            '<b>' + money(p.marketPrice) + '</b></button></li>';
+        }).join("");
+        $("suggest").hidden = false;
+        $("q").setAttribute("aria-expanded", "true");
+        $("suggest").querySelectorAll(".sug").forEach(function (b) {
+          b.addEventListener("click", function () {
+            var p = sugItems[Number(b.dataset.i)];
+            var q2 = p.name.replace(/\s*\([^)]*\)/g, "").replace(/\s+-\s+[\w\/-]+$/, "").trim() + (p.number ? " " + p.number : "");
+            $("q").value = q2;
+            hideSuggest();
+            $("q").blur();
+            gated(function () { search(q2, { source: "suggest" }, p.id); });
+          });
+        });
+      }).catch(hideSuggest);
+    }, 220);
+  });
+  $("q").addEventListener("keydown", function (e) { if (e.key === "Escape") hideSuggest(); });
+  document.addEventListener("click", function (e) { if (!$("searchForm").contains(e.target)) hideSuggest(); });
+
   // ---------- typed search ----------
   $("searchForm").addEventListener("submit", function (e) {
     e.preventDefault();
     var q = $("q").value.trim();
     if (!q) return;
     $("q").blur();
+    hideSuggest();
+    sugReq++;
     gated(function () { search(q, { source: "typed" }); });
   });
 
@@ -184,7 +224,7 @@
     ["matches", "detail", "tcg", "ebay"].forEach(function (id) { $(id).hidden = true; });
   }
 
-  function search(q, read) {
+  function search(q, read, preferId) {
     state.read = Object.assign({ query: q, numbers: [] }, read || {});
     state.read.query = q;
     clearResults();
@@ -197,28 +237,42 @@
         loadEbay(q, null);
         return;
       }
-      showProducts(d.products);
+      showProducts(d.products, preferId);
     }).catch(function (err) {
       $("matchList").innerHTML = '<li class="empty">TCGplayer search is unavailable right now (' + esc(err.message) + ').</li>';
       loadEbay(q, null);
     });
   }
 
-  function showProducts(list) {
-    state.products = list.slice(0, 10);
+  function showProducts(list, preferId) {
+    state.products = list.slice(0, 12);
     $("matches").hidden = false;
-    $("matchList").innerHTML = state.products.map(function (p, i) {
-      return '<li><button type="button" class="match" data-i="' + i + '" aria-pressed="false">' +
-        '<img src="' + esc(p.image) + '" alt="" loading="lazy" width="44" height="62">' +
-        '<span class="m-text"><span class="m-name">' + esc(p.name) + (p.learned ? ' <em class="tag">picked before</em>' : "") + '</span>' +
-        '<span class="m-sub">' + esc([p.set, p.number && "#" + p.number].filter(Boolean).join(" · ")) + '</span></span>' +
-        '<span class="m-price">' + money(p.marketPrice) + '<small>market</small></span>' +
-        '</button></li>';
+    // group by set, keeping the best match's set first
+    var order = [], groups = {};
+    state.products.forEach(function (p, i) {
+      var k = p.set || "Other";
+      if (!groups[k]) { groups[k] = []; order.push(k); }
+      groups[k].push(i);
+    });
+    $("matchList").innerHTML = order.map(function (k) {
+      return '<li class="set-group"><div class="set-head">' + esc(k) + '</div><ul>' + groups[k].map(function (i) {
+        var p = state.products[i];
+        return '<li><button type="button" class="match" data-i="' + i + '" aria-pressed="false">' +
+          '<img src="' + esc(p.image) + '" alt="" loading="lazy" width="44" height="62">' +
+          '<span class="m-text"><span class="m-name">' + esc(p.name) + (p.learned ? ' <em class="tag">picked before</em>' : "") + '</span>' +
+          '<span class="m-sub">' + esc([p.number && "#" + p.number, p.rarity].filter(Boolean).join(" · ")) + '</span></span>' +
+          '<span class="m-price">' + money(p.marketPrice) + '<small>market</small></span>' +
+          '</button></li>';
+      }).join("") + '</ul></li>';
     }).join("");
     $("matchList").querySelectorAll(".match").forEach(function (b) {
       b.addEventListener("click", function () { select(Number(b.dataset.i), true); });
     });
-    select(0, false);
+    $("matchList").classList.toggle("collapsed", order.length > 3);
+    $("moreBtn").hidden = order.length <= 3;
+    var first = 0;
+    if (preferId) state.products.forEach(function (p, i) { if (p.id === preferId) first = i; });
+    select(first, !!preferId);
   }
 
   function ebayQuery(p) {
@@ -242,6 +296,11 @@
     loadEbay(ebayQuery(p), both);
     if (byUser) $("detail").scrollIntoView({ behavior: "smooth", block: "start" });
   }
+
+  $("moreBtn").addEventListener("click", function () {
+    $("matchList").classList.remove("collapsed");
+    $("moreBtn").hidden = true;
+  });
 
   // ---------- save the search / teach the matcher ----------
   function record(event) {

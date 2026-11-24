@@ -10,7 +10,7 @@
   <link rel="icon" type="image/png" sizes="32x32" href="/favicon.png">
   <link rel="apple-touch-icon" href="/apple-touch-icon.png">
   <link rel="manifest" href="/site.webmanifest">
-  <link rel="stylesheet" href="/styles.css?v=5">
+  <link rel="stylesheet" href="/styles.css?v=6">
 </head>
 <body>
   <nav class="tabs" aria-label="Main">
@@ -19,27 +19,36 @@
   </nav>
 
   <main class="page search-page">
-    <h1 class="fade">Card Search</h1>
-    <p class="tagline fade">Snap a Pokémon or One Piece card to see what it actually sold for.</p>
+    <h1 class="fade search-title">Card Search</h1>
 
-    <div class="game-toggle fade" role="radiogroup" aria-label="Game">
-      <button type="button" class="chip" role="radio" aria-checked="true" data-game="pokemon">Pokémon</button>
-      <button type="button" class="chip" role="radio" aria-checked="false" data-game="onepiece">One Piece</button>
-    </div>
+    <form id="searchForm" class="hero-search fade" autocomplete="off" role="search">
+      <div class="field">
+        <svg class="field-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="11" cy="11" r="6.5"/><path d="m20 20-4.2-4.2"/></svg>
+        <label for="q" class="sr-only">Card name or number</label>
+        <input id="q" name="q" type="search" inputmode="search" placeholder="Card name or number" enterkeyhint="search"
+          role="combobox" aria-autocomplete="list" aria-controls="suggest" aria-expanded="false">
+        <button type="submit" class="go-btn">Search</button>
+      </div>
+      <ul id="suggest" class="suggest" role="listbox" hidden></ul>
+      <div class="game-toggle" role="radiogroup" aria-label="Game">
+        <button type="button" class="chip" role="radio" aria-checked="true" data-game="pokemon">Pokémon</button>
+        <button type="button" class="chip" role="radio" aria-checked="false" data-game="onepiece">One Piece</button>
+      </div>
+    </form>
 
     <div class="snap fade">
       <label class="ig-btn snap-btn">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true">
           <path d="M4 8h3l1.6-2.4h6.8L17 8h3v11H4z"/><circle cx="12" cy="13" r="3.6"/>
         </svg>
-        <span>Take a photo</span>
+        <span>Scan a card</span>
         <input id="camera" type="file" accept="image/*" capture="environment" hidden>
       </label>
-      <label class="ghost-btn">
-        <span>Upload a photo</span>
+      <label class="text-btn">
+        <span>or upload a photo</span>
         <input id="upload" type="file" accept="image/*" hidden>
       </label>
-      <p class="hint center">Tip: fill the frame with the card, avoid glare. Reading happens on your phone.</p>
+      <p class="hint center">Reads on your phone. Fill the frame and avoid glare.</p>
     </div>
 
     <div id="preview" class="preview" hidden>
@@ -50,26 +59,23 @@
       </div>
     </div>
 
-    <form id="searchForm" class="search-form fade" autocomplete="off">
-      <label for="q" class="sr-only">Card name and number</label>
-      <input id="q" name="q" type="search" inputmode="search" placeholder="e.g. Charizard ex 223/197" enterkeyhint="search">
-      <button type="submit" class="go-btn">Search</button>
-    </form>
 
     <section id="popular" class="block" hidden>
       <h2 class="block-title">Popular &amp; recent</h2>
       <ul id="popList" class="pop-list"></ul>
     </section>
 
-    <section id="matches" class="block" hidden>
-      <h2 class="block-title">Is this your card?</h2>
-      <p class="hint">Tap the exact printing. Your pick helps the scanner learn.</p>
-      <ul id="matchList" class="match-list"></ul>
-    </section>
-
     <section id="detail" class="block" hidden>
       <div id="detailCard"></div>
     </section>
+
+    <section id="matches" class="block" hidden>
+      <h2 class="block-title">Not it? Pick your printing</h2>
+      <p class="hint">Grouped by set. Tap the exact printing; your pick helps the scanner learn.</p>
+      <ul id="matchList" class="match-list collapsed"></ul>
+      <button type="button" id="moreBtn" class="text-btn more-btn" hidden>Show all printings</button>
+    </section>
+
 
     <section id="tcg" class="block" hidden>
       <div class="block-head">
@@ -106,7 +112,7 @@
     <a href="https://www.instagram.com/elitetrading.club/" target="_blank" rel="noopener noreferrer">Instagram @elitetrading.club</a>
   </footer>
 
-  <script src="/scan.js?v=1" defer></script>
-  <script src="/search.js?v=4" defer></script>
+  <script src="/scan.js?v=2" defer></script>
+  <script src="/search.js?v=5" defer></script>
 </body>
 </html>
