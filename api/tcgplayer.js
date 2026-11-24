@@ -1,74 +1,51 @@
-// TCGplayer data from the same public endpoints tcgplayer.com's own pages call.
-//   GET /api/tcgplayer?game=pokemon&q=charizard%20ex%20223/197  -> matching products
-//   GET /api/tcgplayer?id=509980                                -> latest sales for one product
-const { BROWSER_UA, GAMES, send, fetchWithTimeout, cleanQuery } = require("./_lib");
+// GET /api/tcgplayer?game=pokemon&q=charizard%20ex%20223/197  -> matching products (learned picks first)
+// GET /api/tcgplayer?id=509980                                -> latest sales + saved sale history
+const { GAMES, send, cleanQuery } = require("./_lib");
+const { searchProducts, latestSales } = require("./_tcg");
+const store = require("./_store");
 
-const HEADERS = {
-  "Content-Type": "application/json",
-  Accept: "application/json, text/plain, */*",
-  "User-Agent": BROWSER_UA,
-  Origin: "https://www.tcgplayer.com",
-  Referer: "https://www.tcgplayer.com/",
-};
-
-async function searchProducts(game, q) {
-  const line = GAMES[game].tcgLine;
-  const url = `https://mp-search-api.tcgplayer.com/v1/search/request?q=${encodeURIComponent(q)}&isList=false`;
-  const payload = {
-    algorithm: "sales_synonym_v2",
-    from: 0,
-    size: 12,
-    filters: { term: { productLineName: [line], productTypeName: ["Cards"] }, range: {}, match: {} },
-    listingSearch: {
-      context: { cart: {} },
-      filters: { term: { sellerStatus: "Live", channelId: 0 }, range: { quantity: { gte: 1 } }, exclude: { channelExclusion: 0 } },
-    },
-    context: { cart: {}, shippingCountry: "US" },
-    settings: { useFuzzySearch: true, didYouMean: {} },
-    sort: {},
-  };
-  const r = await fetchWithTimeout(url, { method: "POST", headers: HEADERS, body: JSON.stringify(payload) });
-  if (!r.ok) throw new Error(`TCGplayer search HTTP ${r.status}`);
-  const d = await r.json();
-  const rows = (d && d.results && d.results[0] && d.results[0].results) || [];
-  // Keep TCGplayer's order, but list printings that have a market price first.
-  const sorted = rows
-    .map((x, i) => ({ x, i }))
-    .sort((a, b) => (typeof b.x.marketPrice === "number") - (typeof a.x.marketPrice === "number") || a.i - b.i)
-    .map((o) => o.x);
-  return sorted.map((x) => {
-    const id = Math.round(Number(x.productId));
-    const attrs = x.customAttributes || {};
-    return {
-      id,
-      name: x.productName,
-      set: x.setName,
-      number: attrs.number || "",
-      rarity: x.rarityName || "",
-      marketPrice: typeof x.marketPrice === "number" ? x.marketPrice : null,
-      lowestPrice: typeof x.lowestPrice === "number" ? x.lowestPrice : null,
-      image: `https://tcgplayer-cdn.tcgplayer.com/product/${id}_in_200x200.jpg`,
-      url: `https://www.tcgplayer.com/product/${id}`,
-    };
-  });
+function saleKey(s) {
+  return [s.date, s.price, s.condition, s.variant, s.quantity].join("|");
 }
 
-async function latestSales(id) {
-  const url = `https://mpapi.tcgplayer.com/v2/product/${id}/latestsales`;
-  const payload = { conditions: [], languages: [], variants: [], listingType: "All", offset: 0, limit: 25, time: Date.now() };
-  const r = await fetchWithTimeout(url, { method: "POST", headers: HEADERS, body: JSON.stringify(payload) });
-  if (!r.ok) throw new Error(`TCGplayer latest sales HTTP ${r.status}`);
-  const d = await r.json();
-  return (d.data || []).map((s) => ({
-    date: s.orderDate,
-    condition: s.condition,
-    variant: s.variant,
-    language: s.language,
-    quantity: s.quantity,
-    price: s.purchasePrice,
-    shipping: s.shippingPrice,
-    title: s.title,
-  }));
+function median(a) {
+  if (!a.length) return null;
+  const s = [...a].sort((x, y) => x - y), m = Math.floor(s.length / 2);
+  return s.length % 2 ? s[m] : (s[m - 1] + s[m]) / 2;
+}
+
+async function salesFor(id) {
+  const path = `sales/${id}.json`;
+  let live = null, error = null;
+  try { live = await latestSales(id); } catch (e) { error = e.message; }
+  const saved = (await store.readJSON(path)) || { id: Number(id), sales: [] };
+
+  if (live) {
+    const have = new Set(saved.sales.map(saleKey));
+    const fresh = live.filter((s) => !have.has(saleKey(s)));
+    if (fresh.length) {
+      saved.sales = fresh.concat(saved.sales)
+        .sort((a, b) => String(b.date).localeCompare(String(a.date)))
+        .slice(0, 600);
+      saved.updatedAt = new Date().toISOString();
+      store.writeJSON(path, saved).catch((e) => console.error("sales save failed", e && e.message));
+    }
+  }
+
+  const history = saved.sales;
+  const cutoff = Date.now() - 30 * 864e5;
+  const nm30 = history.filter((s) => s.condition === "Near Mint" && new Date(s.date).getTime() >= cutoff).map((s) => s.price);
+  return {
+    sales: live || history.slice(0, 25),
+    fromHistory: !live,
+    error,
+    history: {
+      count: history.length,
+      since: history.length ? history[history.length - 1].date : null,
+      nearMint30dMedian: median(nm30),
+      nearMint30dCount: nm30.length,
+    },
+  };
 }
 
 module.exports = async (req, res) => {
@@ -76,22 +53,39 @@ module.exports = async (req, res) => {
   try {
     if (id) {
       if (!/^\d{1,9}$/.test(String(id))) return send(res, 400, { error: "Bad product id" });
-      const sales = await latestSales(id);
-      return send(res, 200, { source: "TCGplayer latest sales", productId: Number(id), url: `https://www.tcgplayer.com/product/${id}`, sales }, 300);
+      const r = await salesFor(id);
+      if (!r.sales.length && r.error) return send(res, 502, { error: "TCGplayer did not answer.", blocked: true });
+      return send(res, 200, {
+        source: "TCGplayer latest sales",
+        productId: Number(id),
+        url: `https://www.tcgplayer.com/product/${id}`,
+        ...r,
+      }, 300);
     }
     if (!GAMES[game]) return send(res, 400, { error: "Only Pokémon and One Piece are supported." });
     const query = cleanQuery(q);
     if (!query) return send(res, 400, { error: "Enter a card name." });
-    const products = await searchProducts(game, query);
+    let products = await searchProducts(game, query);
+
+    // Learned picks: cards people confirmed for this same search go first.
+    const idx = await store.loadIndex();
+    const numberLike = query.match(/[A-Z]{2,3}\d{2}-\d{3}|\d{1,3}\/\d{2,3}/i);
+    const keys = store.readKeys(game, { query, numbers: numberLike ? [{ number: numberLike[0] }] : [] });
+    const boost = store.boosts(idx, keys);
+    products = products
+      .map((p, i) => ({ p, i, b: boost[p.id] || 0 }))
+      .sort((a, b) => b.b - a.b || (b.p.marketPrice != null) - (a.p.marketPrice != null) || a.i - b.i)
+      .map((o) => ({ ...o.p, learned: o.b > 0 }));
+
     return send(res, 200, {
       source: "TCGplayer search",
       game,
       query,
       products,
       searchUrl: `https://www.tcgplayer.com/search/${GAMES[game].tcgLine}/product?q=${encodeURIComponent(query)}&productLineName=${GAMES[game].tcgLine}`,
-    }, 600);
+    }, 60);
   } catch (e) {
     console.error("tcgplayer failed", e && e.message);
-    return send(res, 502, { error: "TCGplayer did not answer.", blocked: true, detail: String(e && e.message).slice(0, 120) });
+    return send(res, 502, { error: "TCGplayer did not answer.", blocked: true });
   }
 };

@@ -10,7 +10,7 @@
   <link rel="icon" type="image/png" sizes="32x32" href="/favicon.png">
   <link rel="apple-touch-icon" href="/apple-touch-icon.png">
   <link rel="manifest" href="/site.webmanifest">
-  <link rel="stylesheet" href="/styles.css?v=4">
+  <link rel="stylesheet" href="/styles.css?v=5">
 </head>
 <body>
   <nav class="tabs" aria-label="Main">
@@ -39,11 +39,15 @@
         <span>Upload a photo</span>
         <input id="upload" type="file" accept="image/*" hidden>
       </label>
+      <p class="hint center">Tip: fill the frame with the card, avoid glare. Reading happens on your phone.</p>
     </div>
 
     <div id="preview" class="preview" hidden>
       <img id="previewImg" alt="Your card photo">
-      <p id="idStatus" class="status" role="status" aria-live="polite"></p>
+      <div class="preview-text">
+        <p id="idStatus" class="status" role="status" aria-live="polite"></p>
+        <div id="progress" class="bar" hidden><span></span></div>
+      </div>
     </div>
 
     <form id="searchForm" class="search-form fade" autocomplete="off">
@@ -52,36 +56,57 @@
       <button type="submit" class="go-btn">Search</button>
     </form>
 
+    <section id="popular" class="block" hidden>
+      <h2 class="block-title">Popular &amp; recent</h2>
+      <ul id="popList" class="pop-list"></ul>
+    </section>
+
     <section id="matches" class="block" hidden>
-      <h2 class="block-title">Matches on TCGplayer</h2>
-      <p class="hint">Tap the exact printing.</p>
+      <h2 class="block-title">Is this your card?</h2>
+      <p class="hint">Tap the exact printing. Your pick helps the scanner learn.</p>
       <ul id="matchList" class="match-list"></ul>
+    </section>
+
+    <section id="detail" class="block" hidden>
+      <div id="detailCard"></div>
     </section>
 
     <section id="tcg" class="block" hidden>
       <div class="block-head">
         <h2 class="block-title">TCGplayer · latest sales</h2>
-        <a id="tcgLink" class="ext" target="_blank" rel="noopener noreferrer">Open</a>
+        <a id="tcgLink" class="ext" target="_blank" rel="noopener noreferrer">TCGplayer ↗</a>
       </div>
-      <div id="tcgSummary" class="summary"></div>
       <div id="tcgSales"></div>
     </section>
 
     <section id="ebay" class="block" hidden>
       <div class="block-head">
         <h2 class="block-title">eBay · sold listings</h2>
-        <a id="ebayLink" class="ext" target="_blank" rel="noopener noreferrer">Open</a>
+        <a id="ebayLink" class="ext" target="_blank" rel="noopener noreferrer">eBay sold ↗</a>
       </div>
       <div id="ebaySales"></div>
     </section>
 
-    <p class="fine">Sales come live from TCGplayer's and eBay's public pages. Nothing here is estimated or made up. Card photos are only used to read the card and are not stored. Not affiliated with TCGplayer, eBay, Nintendo, The Pokémon Company or Bandai.</p>
+    <p class="fine">Sales come live from TCGplayer's and eBay's public pages. Nothing here is estimated or made up, and nothing here is financial advice. Card photos are read on your phone and are not uploaded or stored. Not affiliated with TCGplayer, eBay, Nintendo, The Pokémon Company or Bandai.</p>
   </main>
+
+  <div id="gate" class="gate" hidden>
+    <form id="gateForm" class="gate-box" novalidate>
+      <h2>Join Elite Trading Club</h2>
+      <p>Your first lookup was free. Sign up with your email to keep looking up cards with us.</p>
+      <label for="gateEmail" class="sr-only">Email</label>
+      <input id="gateEmail" type="email" inputmode="email" autocomplete="email" placeholder="you@example.com" required>
+      <label class="consent"><input id="gateConsent" type="checkbox"> <span>Get card alerts from Elite Trading Club, unsubscribe anytime.</span></label>
+      <p id="gateError" class="gate-error" role="alert"></p>
+      <button type="submit" class="ig-btn">Sign up &amp; search</button>
+    </form>
+  </div>
 
   <footer>
     <a href="https://www.instagram.com/elitetrading.club/" target="_blank" rel="noopener noreferrer">Instagram @elitetrading.club</a>
   </footer>
 
-  <script src="/search.js?v=3" defer></script>
+  <script src="/scan.js?v=1" defer></script>
+  <script src="/search.js?v=4" defer></script>
 </body>
 </html>

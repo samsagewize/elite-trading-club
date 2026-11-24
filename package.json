@@ -1,0 +1,9 @@
+{
+  "name": "elite-trading-club",
+  "private": true,
+  "description": "Elite Trading Club site and card search",
+  "engines": { "node": ">=20" },
+  "dependencies": {
+    "@vercel/blob": "2.9.0"
+  }
+}
