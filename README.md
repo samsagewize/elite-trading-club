@@ -5,6 +5,7 @@ Simple official site for Elite Trading Club.
 - Live: https://elite-trading-club.vercel.app
 - Card search: https://elite-trading-club.vercel.app/search
 - Instagram: [instagram.com/elitetrading.club](https://www.instagram.com/elitetrading.club/)
+- Subscribe: the gold button on the home page saves emails via `POST /api/subscribe`. Export with `GET /api/admin-signups` (Bearer `ADMIN_TOKEN`).
 
 Nothing on the site is financial advice or a promise of results.
 

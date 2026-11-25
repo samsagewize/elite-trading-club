@@ -25,7 +25,7 @@
   <link rel="icon" type="image/png" sizes="192x192" href="/img/icon-192.png">
   <link rel="apple-touch-icon" href="/apple-touch-icon.png">
   <link rel="manifest" href="/site.webmanifest">
-  <link rel="stylesheet" href="/styles.css?v=6">
+  <link rel="stylesheet" href="/styles.css?v=7">
 </head>
 <body>
   <nav class="tabs" aria-label="Main">
@@ -52,7 +52,20 @@
     <h1 class="fade">Elite Trading Club</h1>
     <p class="tagline fade">A focused community for traders.</p>
 
-    <a class="ig-btn fade" href="https://www.instagram.com/elitetrading.club/" target="_blank" rel="noopener noreferrer">
+    <div class="subscribe fade">
+      <button type="button" id="subOpen" class="ig-btn" aria-expanded="false" aria-controls="subForm">Subscribe</button>
+      <form id="subForm" class="sub-form" hidden novalidate>
+        <label for="subEmail" class="sr-only">Email</label>
+        <div class="field">
+          <input id="subEmail" type="email" inputmode="email" autocomplete="email" placeholder="you@example.com" required>
+          <button type="submit" class="go-btn" id="subGo">Join</button>
+        </div>
+        <p class="hint center">Get club updates from Elite Trading Club. Unsubscribe anytime.</p>
+        <p id="subMsg" class="sub-msg" role="status" aria-live="polite"></p>
+      </form>
+    </div>
+
+    <a class="ig-btn ig-outline fade" href="https://www.instagram.com/elitetrading.club/" target="_blank" rel="noopener noreferrer">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true">
         <rect x="3.5" y="3.5" width="17" height="17" rx="5"/>
         <circle cx="12" cy="12" r="4"/>
@@ -81,5 +94,6 @@
     <a href="https://www.instagram.com/elitetrading.club/" target="_blank" rel="noopener noreferrer">Instagram @elitetrading.club</a>
     <p>Educational community only. Nothing on this site is financial advice or a promise of results.</p>
   </footer>
+  <script src="/subscribe.js?v=1" defer></script>
 </body>
 </html>

@@ -1,5 +1,6 @@
 // GET /api/admin-signups  with header  Authorization: Bearer <ADMIN_TOKEN>
-// Returns every sign-up as CSV (email, created_at, consent, source).
+// Returns every subscriber (home Subscribe + card-search gate) as CSV
+// (email, created_at, consent, source).
 const crypto = require("crypto");
 const store = require("./_store");
 
