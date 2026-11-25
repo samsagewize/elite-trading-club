@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>Profile &amp; Rewards · Elite Trading Club</title>
+  <meta name="description" content="Create a profile, log cards you bought from or sold to Elite Trading Club, and earn store perk points.">
+  <link rel="canonical" href="https://elite-trading-club.vercel.app/profile">
+  <meta name="theme-color" content="#0b0b0f">
+  <link rel="icon" type="image/png" sizes="32x32" href="/favicon.png">
+  <link rel="apple-touch-icon" href="/apple-touch-icon.png">
+  <link rel="manifest" href="/site.webmanifest">
+  <link rel="stylesheet" href="/styles.css?v=8">
+</head>
+<body>
+  <nav class="tabs" aria-label="Main">
+    <a href="/">Home</a>
+    <a href="/search">Search</a>
+    <a href="/profile" aria-current="page">Rewards</a>
+  </nav>
+
+  <main class="page profile-page">
+    <h1 class="fade search-title">Profile &amp; Rewards</h1>
+    <p class="tagline fade">Log cards you bought from us or sold to us. Points become rewards you can redeem for store perks. Details are available from the club — this is not money or a promise of profit.</p>
+
+    <section id="authPanel" class="auth-panel fade">
+      <div class="game-toggle auth-tabs" role="tablist" aria-label="Account">
+        <button type="button" class="chip" role="tab" aria-selected="true" data-tab="register">Create profile</button>
+        <button type="button" class="chip" role="tab" aria-selected="false" data-tab="login">Log in</button>
+      </div>
+
+      <form id="registerForm" class="auth-form" autocomplete="on">
+        <label class="flab" for="regName">Display name <span class="opt">(optional)</span></label>
+        <input id="regName" name="name" type="text" maxlength="40" placeholder="What should we call you?">
+        <label class="flab" for="regEmail">Email</label>
+        <input id="regEmail" name="email" type="email" inputmode="email" autocomplete="email" required placeholder="you@example.com">
+        <label class="flab" for="regPass">Password</label>
+        <input id="regPass" name="password" type="password" autocomplete="new-password" minlength="8" required placeholder="At least 8 characters">
+        <button type="submit" class="ig-btn">Create profile</button>
+      </form>
+
+      <form id="loginForm" class="auth-form" hidden autocomplete="on">
+        <label class="flab" for="loginEmail">Email</label>
+        <input id="loginEmail" name="email" type="email" inputmode="email" autocomplete="username" required placeholder="you@example.com">
+        <label class="flab" for="loginPass">Password</label>
+        <input id="loginPass" name="password" type="password" autocomplete="current-password" required placeholder="Your password">
+        <button type="submit" class="ig-btn">Log in</button>
+      </form>
+      <p id="authMsg" class="sub-msg" role="status" aria-live="polite"></p>
+    </section>
+
+    <section id="dash" hidden>
+      <div class="who">
+        <div>
+          <p id="whoName" class="who-name"></p>
+          <p id="whoEmail" class="who-email"></p>
+          <p id="whoSub" class="who-sub" hidden>Linked to your club email</p>
+        </div>
+        <button type="button" id="logoutBtn" class="text-btn">Log out</button>
+      </div>
+
+      <div class="tier-card" id="tierCard">
+        <div class="tier-top">
+          <span id="tierBadge" class="tier-badge bronze">Bronze</span>
+          <div class="tier-pts">
+            <b id="ptsVerified">0</b>
+            <span>verified points</span>
+          </div>
+        </div>
+        <p id="ptsPending" class="tier-pending">0 points pending review</p>
+        <div class="bar tier-bar" aria-hidden="true"><span id="tierFill"></span></div>
+        <p id="tierNext" class="hint">50 points to Silver</p>
+      </div>
+
+      <ul class="rules">
+        <li>+10 points for each card you log</li>
+        <li>+5 bonus when you add a photo or an order / receipt reference</li>
+        <li>+50 bonus on your first entry</li>
+        <li>Points stay pending until the club verifies the entry. Only verified points count toward your tier.</li>
+        <li>Bronze 0 · Silver 100 · Gold 250. Rewards and perks are redeemable for store perks; ask the club for details.</li>
+      </ul>
+
+      <form id="logForm" class="log-form" novalidate>
+        <h2 class="block-title">Log a card</h2>
+        <p class="hint">Only cards you bought from Elite Trading Club or sold to us.</p>
+
+        <div class="game-toggle" role="radiogroup" aria-label="Type">
+          <button type="button" class="chip" role="radio" aria-checked="true" data-type="bought">Bought from us</button>
+          <button type="button" class="chip" role="radio" aria-checked="false" data-type="sold">Sold to us</button>
+        </div>
+        <div class="game-toggle" role="radiogroup" aria-label="Game">
+          <button type="button" class="chip" role="radio" aria-checked="true" data-game="pokemon">Pokémon</button>
+          <button type="button" class="chip" role="radio" aria-checked="false" data-game="onepiece">One Piece</button>
+        </div>
+
+        <div class="rel">
+          <label class="flab" for="cardName">Card name</label>
+          <input id="cardName" type="text" placeholder="Start typing a name" autocomplete="off" role="combobox" aria-autocomplete="list" aria-controls="cardSuggest" aria-expanded="false">
+          <ul id="cardSuggest" class="suggest" role="listbox" hidden></ul>
+        </div>
+        <div class="row2">
+          <div>
+            <label class="flab" for="cardSet">Set</label>
+            <input id="cardSet" type="text" placeholder="Set">
+          </div>
+          <div>
+            <label class="flab" for="cardNumber">Number</label>
+            <input id="cardNumber" type="text" placeholder="e.g. 025">
+          </div>
+        </div>
+        <input id="productId" type="hidden">
+        <label class="flab" for="cardCond">Condition or grade</label>
+        <input id="cardCond" type="text" placeholder="Near Mint, PSA 10, …">
+        <div class="row2">
+          <div>
+            <label class="flab" for="cardPrice">Price (USD)</label>
+            <input id="cardPrice" type="number" inputmode="decimal" min="0" step="0.01" placeholder="0.00">
+          </div>
+          <div>
+            <label class="flab" for="cardDate">Date</label>
+            <input id="cardDate" type="date">
+          </div>
+        </div>
+        <label class="flab" for="cardRef">Order or receipt reference <span class="opt">(optional, +5)</span></label>
+        <input id="cardRef" type="text" placeholder="Order number">
+        <label class="flab" for="cardPhoto">Photo <span class="opt">(optional, +5)</span></label>
+        <input id="cardPhoto" type="file" accept="image/*">
+        <p id="photoName" class="hint"></p>
+        <p id="logMsg" class="sub-msg" role="status" aria-live="polite"></p>
+        <button type="submit" class="ig-btn" id="logGo">Save entry</button>
+      </form>
+
+      <section class="block">
+        <h2 class="block-title">Your cards</h2>
+        <div id="history" class="history"></div>
+      </section>
+    </section>
+  </main>
+
+  <footer>
+    <a href="https://www.instagram.com/elitetrading.club/" target="_blank" rel="noopener noreferrer">Instagram @elitetrading.club</a>
+    <p>Educational community only. Nothing on this site is financial advice or a promise of results.</p>
+  </footer>
+
+  <script src="/profile.js?v=1" defer></script>
+</body>
+</html>

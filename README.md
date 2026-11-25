@@ -25,3 +25,28 @@ Take or upload a photo of a Pokémon or One Piece card to see what it sold for.
   instead of numbers. No prices are ever estimated or made up.
 
 Static HTML, CSS and plain JavaScript; the API routes are plain Vercel Node functions.
+
+
+## Subscribe
+
+The gold Subscribe button on the home page reveals an email field. Addresses
+are saved by `POST /api/subscribe` in the private Vercel Blob store
+(`signups/`, same records as the card-search sign-up gate). Export them with
+`GET /api/admin-signups` and an `Authorization: Bearer <ADMIN_TOKEN>` header.
+
+## Profile and rewards (`/profile`)
+
+Members can create a profile (email + password), log in, and log cards they
+bought from the club or sold to it.
+
+- `POST /api/auth?action=register|login|logout` and `GET /api/auth`
+- `GET`/`POST /api/rewards` (session cookie required)
+- Points: +10 per card, +5 with a photo or order reference, +50 on the first
+  entry. Points stay pending until an admin verifies the entry. Verified
+  points count toward Bronze (0), Silver (100) and Gold (250).
+- Admin: `GET /api/admin-signups?type=profiles` and `?type=entries`
+  (`&format=json` for JSON), and `POST /api/admin-signups` with
+  `{ "action": "approve"|"reject", "id" }` and the same Bearer token.
+  Rewrites: `/api/admin-profiles`, `/api/admin-entries`, `/api/admin-subscribers`.
+- Rewards and perks are redeemable for store perks. Details from the club.
+  Nothing here is money or a promise of profit.

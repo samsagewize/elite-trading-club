@@ -2,3 +2,4 @@
 .vercel
 node_modules
 ADMIN_TOKEN.txt
+SESSION_SECRET.txt

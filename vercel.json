@@ -21,5 +21,19 @@
     "api/tcgplayer.js": {
       "maxDuration": 20
     }
-  }
+  },
+  "rewrites": [
+    {
+      "source": "/api/admin-subscribers",
+      "destination": "/api/admin-signups"
+    },
+    {
+      "source": "/api/admin-profiles",
+      "destination": "/api/admin-signups?type=profiles"
+    },
+    {
+      "source": "/api/admin-entries",
+      "destination": "/api/admin-signups?type=entries"
+    }
+  ]
 }
